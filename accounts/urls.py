@@ -19,8 +19,10 @@ from django.urls import path
 from accounts import views
 
 app_name = 'accounts'
+
 urlpatterns = [
     path('request-login-url/', views.request_login_url, name="request-login-url"),
     path('oauth/', views.oauth, name="oauth"),
+    path('user/<int:id>', views.user_detail, name="user-detail"),
     path('index/', views.IndexView.as_view(), name="index")
 ]

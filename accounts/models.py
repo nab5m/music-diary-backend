@@ -1,5 +1,6 @@
 import random
 import string
+from datetime import datetime, timedelta
 
 from django.db import models
 
@@ -7,38 +8,23 @@ from django.db import models
 
 
 class Token(models.Model):
-    device_token = models.CharField(verbose_name="디바이스토큰", max_length=55, blank=False, null=False)
-    access_token = models.CharField(verbose_name="엑세스토큰", max_length=55, blank=True, null=True)
-    expires_in = models.DateTimeField(verbose_name="엑세스토큰_만료시간", blank=True, null=True)
+    account = models.OneToOneField('accounts.KakaoAccounts', on_delete=models.CASCADE, related_name="token"
+                                   , blank=True, null=True)
+    access_token = models.CharField(verbose_name="엑세스토큰", max_length=55, blank=False, null=False)
+    expires_in = models.DateTimeField(verbose_name="엑세스토큰_만료시간", blank=True, null=True) # +12시간
     refresh_token = models.CharField(verbose_name="연장토큰", max_length=55, blank=True, null=True)
-    refresh_token_expires_in = models.DateTimeField(verbose_name="연장토큰_만료시간", blank=True, null=True)
+    refresh_token_expires_in = models.DateTimeField(verbose_name="연장토큰_만료시간", blank=True, null=True)    # +1개월 14일
     scope = models.CharField(verbose_name="조회범위", max_length=55, blank=True, null=True)
 
     class Meta:
         verbose_name = "토큰"
         verbose_name_plural = "토큰"
 
-    @classmethod
-    def random_string_digits(cls, length=50):
-        """Generate a random string of letters and digits """
-        letters_and_digits = string.ascii_letters + string.digits
-        return ''.join(random.choice(letters_and_digits) for i in range(length))
-
-    @classmethod
-    def is_device_token_unique(cls, token):
-        if len(cls.objects.filter(device_token=token)):
-            return False
-        else:
-            return True
-    @classmethod
-    def create(cls):
-        while True:
-            random_string = cls.random_string_digits()
-            if cls.is_device_token_unique(random_string):
-                break
-
-        token = cls(device_token=random_string)
-        return token
+    def save(self, *args, **kwargs):
+        now = datetime.now()
+        self.expires_in = now + timedelta(hours=6)
+        self.refresh_token_expires_in = now + timedelta(days=45)
+        super(Token, self).save(*args, **kwargs)
 
 
 class KakaoAccounts(models.Model):
