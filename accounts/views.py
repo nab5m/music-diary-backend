@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from accounts.models import Token, KakaoAccounts
+from accounts.models import KakaoAccounts
 from config.secret_settings import KAKAO_REST_APP_KEY
 from config.settings import KAKAO_REDIRECT_URI
 
@@ -72,7 +72,6 @@ class KakaoAPI:
 @api_view(['GET'])
 def oauth(request):
     code = request.GET['code']
-    token = None
     result = None
 
     json_data = KakaoAPI.get_access_token_json(code)
@@ -96,40 +95,46 @@ def oauth(request):
             # 첫 로그인
             elif len(account_query) == 0:
                 account = KakaoAPI.register_music_diary(user_json_data)
+                account.save()
 
-            # 기존 토큰 있으면 지움
-            # ToDo: 기존 토큰 있으면 유효기간 검사하고 갱신하는 방향으로 수정
-            try:
-                token = account.token
-                token.delete()
-            except (KakaoAccounts.token.RelatedObjectDoesNotExist, AttributeError):
-                pass
-
-            # save new Token
-            token = Token(
-                account=account,
-                access_token=access_token,
-                refresh_token=refresh_token,
-                scope=scope
-            )
-            token.save()
-
-            account.token = token
-            account.save()
-
-        result = {'id': user_json_data['id']}
+        # 세션 저장
+        request.session['access_token'] = access_token
+        request.session['code'] = code
+        request.session.save()
+        print('[SESSION_KEY] : ' + request.session.session_key)
+        print('[SET] access_token = ' + request.session['access_token'])
+        result = {'status': "Success", 'message': "Login Success"}
 
     # 엑세스 토큰 수신 실패
     else:
-        result = {'error': "can't get access_token"}
+        result = {'status': "Error", 'message': "Can't get Access Token"}
 
     return Response(result)
 
 
 @api_view(['GET'])
-def user_detail(request, id):
-    # DoesNotExist exception
-    print(id)
-    account = KakaoAccounts.objects.get(kakao_id=id)
+def user_detail(request):
+    result = None
+    print('[SESSION_KEY] : ' + request.session.session_key)
+    print(request.session.keys())
+    access_token = request.session['access_token']
+    if access_token:
+        result = KakaoAPI.get_user_profile(access_token)
+        result['status'] = 'Success'
+    else:
+        result = {'status': 'Error', 'message': 'Session has no Access Token'}
 
-    return Response()
+    return Response(result)
+
+
+@api_view(['GET'])
+def logout(request):
+    try:
+        print('[SESSION_KEY] : ' + request.session.session_key)
+
+        del request.session['access_token']
+        del request.session['code']
+
+        return Response({'status': 'Sucess', 'message': 'removed Session data'})
+    except KeyError as e:
+        return Response({'status': 'Error', 'message': 'server has no session'})
