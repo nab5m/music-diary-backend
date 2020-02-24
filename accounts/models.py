@@ -10,6 +10,9 @@ class KakaoAccounts(models.Model):
         verbose_name = "카카오계정"
         verbose_name_plural = "카카오계정"
 
+    def __str__(self):
+        return self.nickname + " <%s>" % self.email
+
     kakao_id = models.TextField(verbose_name="카카오아이디", unique=True, blank=False, null=False)
     nickname = models.CharField(verbose_name="닉네임", max_length=50, blank=True, null=True)
     thumbnail_image = models.URLField(verbose_name="프사_URL", blank=True, null=True)

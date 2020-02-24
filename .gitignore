@@ -5,3 +5,6 @@ __pycache__
 *.log
 .idea
 db.sqlite3
+
+songs/data_generator.py
+songs/chromedriver

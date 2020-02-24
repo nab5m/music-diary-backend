@@ -30,9 +30,26 @@ def request_login_url(request):
 class KakaoAPI:
     user_profile_info_uri = "https://kapi.kakao.com/v2/user/me"
 
+    access_token_validation_uri = 'https://kapi.kakao.com/v1/user/access_token_info'
+
     access_token_request_uri = 'https://kauth.kakao.com/oauth/token?grant_type=authorization_code&'
     access_token_request_uri += 'client_id=' + KAKAO_REST_APP_KEY
     access_token_request_uri += '&redirect_uri=' + KAKAO_REDIRECT_URI
+
+    @classmethod
+    def is_valid_token(cls, access_token):
+        headers = {'Authorization': 'Bearer ' + access_token}
+
+        response = requests.get(cls.access_token_validation_uri, headers=headers)
+        if response.status_code == 200:
+            return True
+        elif response.status_code == 400:
+            # when token is not valid convention
+            return False
+        elif response.status_code == 401:
+            # should refresh the token
+            return False
+
 
     @classmethod
     def get_access_token_json(cls, code):
@@ -98,6 +115,7 @@ def oauth(request):
                 account.save()
 
         # 세션 저장
+        request.session['user_email'] = user_json_data['kakao_account']['email']
         request.session['access_token'] = access_token
         request.session['code'] = code
         request.session.save()
@@ -115,10 +133,13 @@ def oauth(request):
 @api_view(['GET'])
 def user_detail(request):
     result = None
-    print('[SESSION_KEY] : ' + request.session.session_key)
+
+    # print('[SESSION_KEY] : ' + request.session.session_key)
     print(request.session.keys())
-    access_token = request.session['access_token']
-    if access_token:
+
+    # ToDo: to be more stable, process when get_user_profile fails
+    if request.session.get('access_token', False):
+        access_token = request.session['access_token']
         result = KakaoAPI.get_user_profile(access_token)
         result['status'] = 'Success'
     else:
@@ -132,6 +153,7 @@ def logout(request):
     try:
         print('[SESSION_KEY] : ' + request.session.session_key)
 
+        del request.session['user_email']
         del request.session['access_token']
         del request.session['code']
 

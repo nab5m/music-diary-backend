@@ -48,7 +48,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts.apps.AccountsConfig',
+    'songs.apps.SongsConfig',
+    'play_lists.apps.PlayListsConfig',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
