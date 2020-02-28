@@ -54,7 +54,10 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+    ],
 }
 
 MIDDLEWARE = [
@@ -95,8 +98,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': secret_settings.POSTGRE_DBNAME,
+        'USER': secret_settings.POSTGRE_USERNAME,
+        'PASSWORD': secret_settings.POSTGRE_PASSWORD,
+        'HOST': secret_settings.POSTGRE_HOST,
+        'PORT': secret_settings.POSTGRE_PORT,
     }
 }
 
