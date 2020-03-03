@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 from config.HybridRouter import HybridRouter
 from play_lists.api import PlayListViewSet
@@ -26,6 +27,7 @@ router.add_api_view('song', path('song/', SongListView.as_view(), name='song-lis
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', TemplateView.as_view(template_name="index.html")),
     path('', include('accounts.urls')),
 
     path("api/v1/", include(router.urls)),
