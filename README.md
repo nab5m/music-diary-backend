@@ -11,3 +11,15 @@
 프론트엔드 : react.js<br/>
 백엔드 : django<br/><br/>
 Demo: http://music-diary.surge.sh<br/>
+
+## 빌드 과정
+0. develop 브랜치 커밋
+1. aws 브랜치에서 develop 커밋을 cherry-pick
+2. 추가된 모듈 있으면 requirements.txt에 추가
+3. DEBUG=False로 변경
+4. git commit
+5. git push and pull
+6. aws에서 디버깅
+
+## Remote 저장소 관리
+- Repository를 develop과 production으로 분리해서 push한다
