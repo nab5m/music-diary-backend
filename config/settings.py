@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 from config import secret_settings
 
-KAKAO_REDIRECT_URI = 'http://ec2-15-165-171-10.ap-northeast-2.compute.amazonaws.com:8000/'
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
     'http://127.0.0.1:3000',
@@ -35,6 +34,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+KAKAO_REDIRECT_URI = 'http://ec2-15-165-171-10.ap-northeast-2.compute.amazonaws.com:8000/'
+if DEBUG:
+    KAKAO_REDIRECT_URI = 'http://localhost:8000/'
 
 # Application definition
 
